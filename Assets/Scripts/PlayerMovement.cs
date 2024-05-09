@@ -8,6 +8,7 @@ public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float jumpForce = 7f;
+    [SerializeField] private GameObject target;
     private Vector3 moveDirection;
     
     private PlayerInput playerInput;
@@ -21,8 +22,9 @@ public class PlayerMovement : MonoBehaviour
 
     private CharacterController charController;
     private Vector3 horizontalVelocity;
-    private float gravity = 9.81f;
     private bool isJumping = false;
+
+    private Transform cameraTransform;
     
     void Start()
     {
@@ -32,6 +34,9 @@ public class PlayerMovement : MonoBehaviour
         //rb = GetComponent<Rigidbody>();
 
         charController = GetComponent<CharacterController>();
+
+        Cursor.visible = false;
+        cameraTransform = Camera.main.transform;
     }
 
     void Update()
@@ -40,7 +45,10 @@ public class PlayerMovement : MonoBehaviour
         currentInputDirection = Vector2.SmoothDamp(currentInputDirection, inputDirection,
             ref smoothInputVelocity, smoothInputSpeed);
         moveDirection = new Vector3(currentInputDirection.x, 0f, currentInputDirection.y);
-
+        moveDirection = cameraTransform.forward * moveDirection.z +
+                        cameraTransform.right * moveDirection.x;
+        moveDirection.y = 0f;
+        
         MovePlayerCC();
     }
 
@@ -61,11 +69,9 @@ public class PlayerMovement : MonoBehaviour
 
     private void MovePlayerCC()
     {
-        Vector3 moveVector = transform.TransformDirection(moveDirection);
         if (charController.isGrounded)
         {
-            // OPRAVIT NA -1f
-            horizontalVelocity.y = 0f;
+            horizontalVelocity.y = -1f;
             if (isJumping)
             {
                 horizontalVelocity.y = jumpForce;
@@ -74,10 +80,16 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            horizontalVelocity.y -= gravity * 2f * Time.deltaTime;
+            horizontalVelocity.y += Physics.gravity.y * 2f * Time.deltaTime;
         }
-        charController.Move(moveVector * (moveSpeed * Time.deltaTime));
+        charController.Move(moveDirection * (moveSpeed * Time.deltaTime));
         charController.Move(horizontalVelocity * Time.deltaTime);
+        
+        Vector3 eulerAngles = cameraTransform.eulerAngles;
+        target.transform.rotation = Quaternion.Euler(
+            eulerAngles.x,
+            eulerAngles.y,
+            0);
     }
 
     public void Jump(InputAction.CallbackContext ctx)
