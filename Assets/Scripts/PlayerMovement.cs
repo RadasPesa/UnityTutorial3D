@@ -11,8 +11,6 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private GameObject target;
     private Vector3 moveDirection;
     
-    private PlayerInput playerInput;
-    private InputAction movementAction;
     private Vector2 inputDirection;
     private Vector2 currentInputDirection;
     private Vector2 smoothInputVelocity;
@@ -25,11 +23,12 @@ public class PlayerMovement : MonoBehaviour
     private bool isJumping = false;
 
     private Transform cameraTransform;
+
+    private InputManager inputManager;
     
     void Start()
     {
-        playerInput = GetComponent<PlayerInput>();
-        movementAction = playerInput.actions["Movement"];
+        inputManager = InputManager.instance;
 
         //rb = GetComponent<Rigidbody>();
 
@@ -41,7 +40,7 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        inputDirection = movementAction.ReadValue<Vector2>();
+        inputDirection = inputManager.GetInputDirection();
         currentInputDirection = Vector2.SmoothDamp(currentInputDirection, inputDirection,
             ref smoothInputVelocity, smoothInputSpeed);
         moveDirection = new Vector3(currentInputDirection.x, 0f, currentInputDirection.y);
