@@ -9,12 +9,15 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float jumpForce = 7f;
     [SerializeField] private GameObject target;
+    [SerializeField] private GameObject playerModel;
+    private Animator playerAnim;
     private Vector3 moveDirection;
     
     private Vector2 inputDirection;
     private Vector2 currentInputDirection;
     private Vector2 smoothInputVelocity;
     [SerializeField] private float smoothInputSpeed = 0.2f;
+    [SerializeField] private float rotationSpeed = 7f;
 
     private Rigidbody rb;
 
@@ -32,6 +35,7 @@ public class PlayerMovement : MonoBehaviour
 
         //rb = GetComponent<Rigidbody>();
 
+        playerAnim = playerModel.GetComponent<Animator>();
         charController = GetComponent<CharacterController>();
 
         Cursor.visible = false;
@@ -47,7 +51,15 @@ public class PlayerMovement : MonoBehaviour
         moveDirection = cameraTransform.forward * moveDirection.z +
                         cameraTransform.right * moveDirection.x;
         moveDirection.y = 0f;
+
+        if (moveDirection.magnitude > 0.1f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
+            playerModel.transform.rotation = Quaternion.Lerp(
+                playerModel.transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+        }
         
+        playerAnim.SetFloat("Speed", moveDirection.sqrMagnitude);
         MovePlayerCC();
     }
 
@@ -84,11 +96,13 @@ public class PlayerMovement : MonoBehaviour
         charController.Move(moveDirection * (moveSpeed * Time.deltaTime));
         charController.Move(horizontalVelocity * Time.deltaTime);
         
+        /*
         Vector3 eulerAngles = cameraTransform.eulerAngles;
         target.transform.rotation = Quaternion.Euler(
             eulerAngles.x,
             eulerAngles.y,
             0);
+            */
     }
 
     public void Jump(InputAction.CallbackContext ctx)

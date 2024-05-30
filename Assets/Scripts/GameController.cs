@@ -20,4 +20,17 @@ public class GameController : MonoBehaviour
         pauseMenu.SetActive(true);
         Cursor.visible = true;
     }
+
+    public void ResumeMenu(InputAction.CallbackContext ctx)
+    {
+        if (!ctx.performed) return;
+        ResumeMenu();
+    }
+
+    public void ResumeMenu()
+    {
+        inputManager.SwitchCurrentMap("Game");
+        pauseMenu.SetActive(false);
+        Cursor.visible = false;
+    }
 }
